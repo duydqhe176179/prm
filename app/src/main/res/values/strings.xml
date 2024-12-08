@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Money Shield</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="login_button">Login</string>
+    <string name="add_transaction_button">Add Transaction</string>
+    <string name="view_report_button">View Report</string>
+    <string name="amount_hint">Amount</string>
+    <string name="description_hint">Description</string>
+    <string name="save_transaction_button">Save Transaction</string>
+    <string name="report_text">Expense Report</string>
+    <string-array name="transaction_types">
+        <item>Income</item>
+        <item>Expense</item>
+    </string-array>
+
+</resources>
