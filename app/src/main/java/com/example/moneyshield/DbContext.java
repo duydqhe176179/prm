@@ -127,14 +127,13 @@ public class DbContext extends SQLiteOpenHelper {
         Cursor cursor = null;
 
         try {
-            // Sử dụng đúng tên cột "id" trong bảng "users"
             cursor = db.rawQuery(
                     "SELECT username FROM users WHERE id = ?",
                     new String[]{String.valueOf(userId)}
             );
 
             if (cursor.moveToFirst()) {
-                username = cursor.getString(0); // Lấy giá trị của cột "username"
+                username = cursor.getString(0);
             }
         } catch (Exception e) {
             e.printStackTrace();

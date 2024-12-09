@@ -38,22 +38,17 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            int userId = authenticateUser(username, password); // Lấy userId
+            int userId = authenticateUser(username, password);
 
             if (userId != -1) {
-                // Đăng nhập thành công, chuyển sang MainActivity
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                intent.putExtra("userId", userId); // Truyền userId vào MainActivity
-                startActivity(intent);
+                intent.putExtra("userId", userId);
                 finish();
             } else {
-                // Thông báo nếu đăng nhập không thành công
                 Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
             }
         });
 
-
-        // Khi người dùng click vào nút đăng ký
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,28 +62,25 @@ public class LoginActivity extends AppCompatActivity {
     private int authenticateUser(String username, String password) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
-        int userId = -1; // Giá trị mặc định nếu không tìm thấy người dùng
+        int userId = -1;
 
         try {
-            // Truy vấn để tìm người dùng với tên đăng nhập và mật khẩu tương ứng
             cursor = db.query("users", new String[]{"id"},
                     "username = ? AND password = ?", new String[]{username, password},
                     null, null, null);
 
-            // Kiểm tra xem có kết quả không
             if (cursor != null && cursor.moveToFirst()) {
-                userId = cursor.getInt(0); // Lấy cột "id" (userId)
+                userId = cursor.getInt(0);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            // Đảm bảo đóng con trỏ sau khi sử dụng
             if (cursor != null) {
                 cursor.close();
             }
         }
 
-        return userId; // Trả về userId (hoặc -1 nếu không tìm thấy)
+        return userId;
     }
 
 }

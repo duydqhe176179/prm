@@ -10,26 +10,23 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int userId = 123; // Giá trị userId giả lập, thay bằng giá trị thực tế
+    private int userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Lấy userId từ Intent
         userId = getIntent().getIntExtra("userId", -1);
         if (userId == -1) {
             Toast.makeText(this, "User not found. Please log in again.", Toast.LENGTH_SHORT).show();
             finish(); // Kết thúc nếu không có userId hợp lệ
         }
 
-        // Load HomeFragment by default
         if (savedInstanceState == null) {
             loadFragment(createFragmentWithUserId(new HomeFragment()));
         }
 
-        // Xử lý điều hướng với BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Fragment selectedFragment = null;
