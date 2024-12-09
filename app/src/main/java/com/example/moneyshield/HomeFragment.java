@@ -1,6 +1,5 @@
 package com.example.moneyshield;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -40,16 +39,30 @@ public class HomeFragment extends Fragment {
 
         Button addTransactionButton = view.findViewById(R.id.addTransactionButton);
         addTransactionButton.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), AddTransactionFragment.class);
-            intent.putExtra("userId", userId);
-            startActivity(intent);
+            // Mở AddTransactionFragment
+            AddTransactionFragment addTransactionFragment = new AddTransactionFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt("userId", userId);
+            addTransactionFragment.setArguments(bundle);
+
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, addTransactionFragment)  // Thay thế với AddTransactionFragment
+                    .addToBackStack(null)  // Cho phép quay lại
+                    .commit();
         });
 
         Button viewReportButton = view.findViewById(R.id.viewReportButton);
         viewReportButton.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), ReportFragment.class);
-            intent.putExtra("userId", userId);
-            startActivity(intent);
+            // Mở ReportFragment
+            ReportFragment reportFragment = new ReportFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt("userId", userId);
+            reportFragment.setArguments(bundle);
+
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, reportFragment)  // Thay thế với ReportFragment
+                    .addToBackStack(null)  // Cho phép quay lại
+                    .commit();
         });
 
         loadTransactions();

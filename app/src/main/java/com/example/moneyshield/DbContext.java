@@ -1,8 +1,14 @@
 package com.example.moneyshield;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import com.github.mikephil.charting.data.Entry;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DbContext extends SQLiteOpenHelper {
 
@@ -42,4 +48,77 @@ public class DbContext extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS users");
         onCreate(db);
     }
+
+    // Phương thức lấy giao dịch theo tháng và năm
+    public List<Entry> getTransactionsByMonth(int userId, int month, int year) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Entry> entries = new ArrayList<>();
+        double runningBalance = 0;
+        Cursor cursor = null;
+
+        // Chuyển tháng và năm thành định dạng YYYY-MM
+        String monthYear = String.format("%04d-%02d", year, month);
+
+        try {
+            // Truy vấn các giao dịch theo tháng và năm
+            cursor = db.rawQuery(
+                    "SELECT amount, type, date FROM transactions WHERE user_id = ? AND date LIKE ? ORDER BY date ASC",
+                    new String[]{String.valueOf(userId), monthYear + "%"}
+            );
+
+            while (cursor.moveToNext()) {
+                double amount = cursor.getDouble(0);
+                String type = cursor.getString(1);
+
+                // Cập nhật số dư theo loại giao dịch
+                if ("Income".equals(type)) {
+                    runningBalance += amount;
+                } else if ("Expense".equals(type)) {
+                    runningBalance -= amount;
+                }
+
+                // Thêm điểm vào biểu đồ
+                entries.add(new Entry(cursor.getPosition(), (float) runningBalance));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return entries;
+    }
+
+    // Phương thức lấy tổng thu hoặc tổng chi cho tháng và năm
+    public double getTotalByType(int userId, int month, int year, String type) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double total = 0;
+        Cursor cursor = null;
+
+        // Chuyển tháng và năm thành định dạng YYYY-MM
+        String monthYear = String.format("%04d-%02d", year, month);
+
+        try {
+            // Truy vấn tổng thu hoặc tổng chi theo tháng và năm
+            cursor = db.rawQuery(
+                    "SELECT SUM(amount) FROM transactions WHERE user_id = ? AND date LIKE ? AND type = ?",
+                    new String[]{String.valueOf(userId), monthYear + "%", type}
+            );
+
+            if (cursor.moveToFirst()) {
+                total = cursor.getDouble(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return total;
+    }
+
 }
