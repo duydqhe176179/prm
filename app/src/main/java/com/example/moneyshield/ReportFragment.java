@@ -1,94 +1,75 @@
 package com.example.moneyshield;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Description;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.utils.ColorTemplate;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 
-import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 public class ReportFragment extends Fragment {
 
+    private TextView balanceTextView;
+    private TextView spendingDetailsTextView;
+    private TextView incomeDetailsTextView;
+    private LineChart reportChart;
     private DbContext dbHelper;
-    private PieChart pieChart;
-    private TextView reportTextView;
+    private int userId;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_report, container, false);
 
-        dbHelper = new DbContext(requireContext());
-        pieChart = view.findViewById(R.id.pieChart);
-        reportTextView = view.findViewById(R.id.reportTextView);
+        balanceTextView = view.findViewById(R.id.balanceTextView);
+        spendingDetailsTextView = view.findViewById(R.id.spendingDetailsTextView);
+        incomeDetailsTextView = view.findViewById(R.id.incomeDetailsTextView);
+        reportChart = view.findViewById(R.id.reportChart);
 
-        // Load data and display the report
-        loadReportData();
+        dbHelper = new DbContext(requireContext());
+        userId = getArguments() != null ? getArguments().getInt("userId", -1) : -1;
+
+        // Lấy tháng và năm hiện tại
+        Calendar calendar = Calendar.getInstance();
+        int currentMonth = calendar.get(Calendar.MONTH) + 1;  // Tháng trong Java là từ 0-11
+        int currentYear = calendar.get(Calendar.YEAR);
+
+        // Cập nhật dữ liệu báo cáo cho tháng và năm hiện tại
+        updateReportData(currentMonth, currentYear);
 
         return view;
     }
 
-    /**
-     * Load data from the database and populate the PieChart and TextView.
-     */
-    private void loadReportData() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+    private void updateReportData(int month, int year) {
+        // Lấy các điểm giao dịch từ DB cho tháng và năm hiện tại
+        List<Entry> entries = dbHelper.getTransactionsByMonth(userId, month, year);
 
-        // Query to get total expenses and income grouped by type
-        String query = "SELECT type, SUM(amount) AS total FROM transactions WHERE type IN ('Income', 'Expense') GROUP BY type";
-        Cursor cursor = db.rawQuery(query, null);
+        // Cập nhật biểu đồ với các điểm giao dịch
+        LineDataSet dataSet = new LineDataSet(entries, "Số dư giao dịch");
+        LineData lineData = new LineData(dataSet);
+        reportChart.setData(lineData);
+        reportChart.invalidate();  // Cập nhật biểu đồ
 
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        double totalIncome = 0;
-        double totalExpense = 0;
-
-        while (cursor.moveToNext()) {
-            String type = cursor.getString(cursor.getColumnIndex("type"));
-            double total = cursor.getDouble(cursor.getColumnIndex("total"));
-
-            if ("Income".equals(type)) {
-                totalIncome = total;
-            } else if ("Expense".equals(type)) {
-                totalExpense = total;
-            }
-
-            // Add entry to PieChart
-            entries.add(new PieEntry((float) total, type));
+        // Hiển thị số dư cuối cùng
+        if (!entries.isEmpty()) {
+            Entry lastEntry = entries.get(entries.size() - 1);
+            balanceTextView.setText(String.format("Số dư: %.2f đ", lastEntry.getY()));
         }
-        cursor.close();
 
-        // Display data in the PieChart
-        PieDataSet dataSet = new PieDataSet(entries, "Transaction Report");
-        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+        // Tính tổng thu và tổng chi
+        double totalIncome = dbHelper.getTotalByType(userId, month, year, "Income");
+        double totalExpense = dbHelper.getTotalByType(userId, month, year, "Expense");
 
-        PieData pieData = new PieData(dataSet);
-        pieData.setValueTextSize(12f);
-
-        pieChart.setData(pieData);
-        pieChart.setUsePercentValues(true);
-        pieChart.setEntryLabelTextSize(12f);
-
-        Description description = new Description();
-        description.setText("Income vs Expense");
-        pieChart.setDescription(description);
-        pieChart.invalidate(); // Refresh the chart
-
-        // Update TextView
-        String reportText = String.format("Total Income: $%.2f\nTotal Expense: $%.2f\nNet Balance: $%.2f", totalIncome, totalExpense, totalIncome - totalExpense);
-        reportTextView.setText(reportText);
+        // Hiển thị tổng thu và tổng chi
+        incomeDetailsTextView.setText(String.format("Tổng thu: %.2f đ", totalIncome));
+        spendingDetailsTextView.setText(String.format("Tổng đã chi: %.2f đ", totalExpense));
     }
 }

@@ -1,23 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:background="#FFFFFF"
+    tools:context=".ReportFragment">
 
+    <!-- Tổng số dư -->
     <TextView
-        android:id="@+id/reportTextView"
-        android:layout_width="match_parent"
+        android:id="@+id/balanceTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:text="Expense Report"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:text="4,710,000 đ"
+        android:textSize="24sp"
+        android:textColor="#000000"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center"/>
 
-    <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/pieChart"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:layout_marginTop="16dp" />
-</LinearLayout>
+    <!-- Báo cáo tháng này -->
+    <TextView
+        android:id="@+id/monthlyReportTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Báo cáo tháng này"
+        android:textSize="18sp"
+        android:textColor="#000000"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/balanceTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Biểu đồ -->
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/reportChart"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/monthlyReportTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Thông tin chi tiết -->
+    <TextView
+        android:id="@+id/spendingDetailsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tổng đã chi: 290,000 đ"
+        android:textSize="14sp"
+        android:textColor="#FF0000"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/reportChart"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center"/>
+
+    <!-- Số dư đã chi -->
+    <TextView
+        android:id="@+id/incomeDetailsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tổng thu: 5,000,000 đ"
+        android:textSize="14sp"
+        android:textColor="#00FF00"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/spendingDetailsTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
