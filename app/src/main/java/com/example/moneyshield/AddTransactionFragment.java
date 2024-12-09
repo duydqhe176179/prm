@@ -69,23 +69,22 @@ public class AddTransactionFragment extends Fragment {
             if (validateInputs(amount, description, date)) {
                 long transactionId = saveTransaction(type, amount, description, date);
                 if (transactionId != -1) {
-                    // Truyền dữ liệu giao dịch vừa thêm về MainActivity qua callback
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("transactionId", transactionId);
-                    resultIntent.putExtra("type", type);
-                    resultIntent.putExtra("amount", amount);
-                    resultIntent.putExtra("description", description);
-                    resultIntent.putExtra("date", date);
-
-                    // Gửi kết quả qua Activity hoặc xử lý trực tiếp
-                    requireActivity().setResult(requireActivity().RESULT_OK, resultIntent);
                     Toast.makeText(requireContext(), "Transaction Saved", Toast.LENGTH_SHORT).show();
-                    requireActivity().finish();
+
+                    HomeFragment homeFragment = new HomeFragment();
+                    Bundle args = new Bundle();
+                    args.putInt("userId", userId);
+                    homeFragment.setArguments(args);
+
+                    requireActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, homeFragment)
+                            .commit();
                 } else {
                     Toast.makeText(requireContext(), "Error saving transaction", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
 
         return view;
     }

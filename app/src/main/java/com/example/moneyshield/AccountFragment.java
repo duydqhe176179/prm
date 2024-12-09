@@ -17,25 +17,27 @@ import com.example.moneyshield.DbContext;
 public class AccountFragment extends Fragment {
 
     private DbContext dbHelper;
-    private TextView tvUserName, tvUserEmail;
+    private TextView tvUserName;
+    private int userId;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
-        // Initialize views
         tvUserName = view.findViewById(R.id.tvUserName);
-        tvUserEmail = view.findViewById(R.id.tvUserEmail);
         Button logoutButton = view.findViewById(R.id.logoutButton);
 
-        // Get data passed from LoginActivity
-        String username = getArguments() != null ? getArguments().getString("username") : "Guest";
+        dbHelper = new DbContext(requireContext());
 
+        userId = getArguments() != null ? getArguments().getInt("userId", -1) : -1;
 
-        // Display the user's name and email
-        tvUserName.setText(username);
-
+        String username = dbHelper.getUsername(userId);
+        if (username != null) {
+            tvUserName.setText(username);
+        } else {
+            tvUserName.setText("Guest");
+        }
 
         // Handle logout button click
         logoutButton.setOnClickListener(v -> {
@@ -48,4 +50,6 @@ public class AccountFragment extends Fragment {
 
         return view;
     }
+
 }
+

@@ -121,4 +121,29 @@ public class DbContext extends SQLiteOpenHelper {
         return total;
     }
 
+    public String getUsername(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String username = null;
+        Cursor cursor = null;
+
+        try {
+            cursor = db.rawQuery(
+                    "SELECT username FROM users WHERE id = ?",
+                    new String[]{String.valueOf(userId)}
+            );
+
+            if (cursor.moveToFirst()) {
+                username = cursor.getString(0);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return username;
+    }
+
 }
