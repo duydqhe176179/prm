@@ -43,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
             if (userId != -1) {
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.putExtra("userId", userId);
+                startActivity(intent);
                 finish();
             } else {
                 Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
