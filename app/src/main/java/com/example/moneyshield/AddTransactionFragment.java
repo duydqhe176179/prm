@@ -7,43 +7,50 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
-public class AddTransactionActivity extends AppCompatActivity {
+public class AddTransactionFragment extends Fragment {
 
     private DbContext dbHelper;
     private EditText amountEditText, descriptionEditText, dateEditText;
     private Spinner typeSpinner;
     private int userId;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_transaction);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_add_transaction, container, false);
 
-        dbHelper = new DbContext(this);
-        userId = getIntent().getIntExtra("userId", -1);
+        dbHelper = new DbContext(requireContext());
 
         // Liên kết các trường giao diện
-        amountEditText = findViewById(R.id.amountEditText);
-        descriptionEditText = findViewById(R.id.descriptionEditText);
-        dateEditText = findViewById(R.id.dateEditText);
-        typeSpinner = findViewById(R.id.typeSpinner);
+        amountEditText = view.findViewById(R.id.amountEditText);
+        descriptionEditText = view.findViewById(R.id.descriptionEditText);
+        dateEditText = view.findViewById(R.id.dateEditText);
+        typeSpinner = view.findViewById(R.id.typeSpinner);
+
+        // Lấy userId từ arguments
+        if (getArguments() != null) {
+            userId = getArguments().getInt("userId", -1);
+        }
 
         // Thiết lập dữ liệu cho Spinner
         setupSpinner();
@@ -52,7 +59,7 @@ public class AddTransactionActivity extends AppCompatActivity {
         dateEditText.setOnClickListener(v -> showDatePickerDialog());
 
         // Xử lý khi nhấn nút Save
-        Button saveTransactionButton = findViewById(R.id.saveTransactionButton);
+        Button saveTransactionButton = view.findViewById(R.id.saveTransactionButton);
         saveTransactionButton.setOnClickListener(v -> {
             String amount = amountEditText.getText().toString();
             String description = descriptionEditText.getText().toString();
@@ -62,21 +69,25 @@ public class AddTransactionActivity extends AppCompatActivity {
             if (validateInputs(amount, description, date)) {
                 long transactionId = saveTransaction(type, amount, description, date);
                 if (transactionId != -1) {
-                    // Truyền dữ liệu giao dịch vừa thêm về MainActivity
+                    // Truyền dữ liệu giao dịch vừa thêm về MainActivity qua callback
                     Intent resultIntent = new Intent();
                     resultIntent.putExtra("transactionId", transactionId);
                     resultIntent.putExtra("type", type);
                     resultIntent.putExtra("amount", amount);
                     resultIntent.putExtra("description", description);
                     resultIntent.putExtra("date", date);
-                    setResult(RESULT_OK, resultIntent);
-                    Toast.makeText(AddTransactionActivity.this, "Transaction Saved", Toast.LENGTH_SHORT).show();
-                    finish();
+
+                    // Gửi kết quả qua Activity hoặc xử lý trực tiếp
+                    requireActivity().setResult(requireActivity().RESULT_OK, resultIntent);
+                    Toast.makeText(requireContext(), "Transaction Saved", Toast.LENGTH_SHORT).show();
+                    requireActivity().finish();
                 } else {
-                    Toast.makeText(this, "Error saving transaction", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Error saving transaction", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
+        return view;
     }
 
     /**
@@ -84,11 +95,10 @@ public class AddTransactionActivity extends AppCompatActivity {
      */
     private void setupSpinner() {
         Set<String> transactionTypes = new LinkedHashSet<>(Arrays.asList("Income", "Expense", "Savings"));
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>(transactionTypes));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, new ArrayList<>(transactionTypes));
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         typeSpinner.setAdapter(adapter);
     }
-
 
     /**
      * Hiển thị DatePickerDialog để người dùng chọn ngày giao dịch.
@@ -99,7 +109,7 @@ public class AddTransactionActivity extends AppCompatActivity {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                 (view, year1, month1, dayOfMonth) -> {
                     // Định dạng ngày đã chọn
                     String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
@@ -114,24 +124,24 @@ public class AddTransactionActivity extends AppCompatActivity {
      */
     private boolean validateInputs(String amount, String description, String date) {
         if (amount.isEmpty()) {
-            Toast.makeText(this, "Amount is required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Amount is required", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         try {
             Double.parseDouble(amount); // Kiểm tra xem amount có phải số không
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Amount must be a valid number", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Amount must be a valid number", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (description.isEmpty()) {
-            Toast.makeText(this, "Description is required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Description is required", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (date.isEmpty()) {
-            Toast.makeText(this, "Date is required", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Date is required", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -152,19 +162,13 @@ public class AddTransactionActivity extends AppCompatActivity {
 
         long result = db.insert("transactions", null, values);
         if (result == -1) {
-            Log.e("AddTransactionActivity", "Error inserting transaction.");
+            Log.e("AddTransactionFragment", "Error inserting transaction.");
         } else {
-            Log.d("AddTransactionActivity", "Transaction saved successfully: ");
-            Log.d("AddTransactionActivity1", "Type: " + type);
-            Log.d("AddTransactionActivity", "Amount: " + amount);
-            Log.d("AddTransactionActivity", "Description: " + description);
-            Log.d("AddTransactionActivity", "Date: " + date);
+            Log.d("AddTransactionFragment", "Transaction saved successfully");
             logTransactionCount();
         }
         return result;
     }
-
-
 
     private void logTransactionCount() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
@@ -177,6 +181,4 @@ public class AddTransactionActivity extends AppCompatActivity {
         }
         cursor.close();
     }
-
 }
-
