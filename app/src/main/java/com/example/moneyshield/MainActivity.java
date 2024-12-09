@@ -1,6 +1,8 @@
 package com.example.moneyshield;
 
 import android.os.Bundle;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -15,12 +17,19 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Lấy userId từ Intent
+        userId = getIntent().getIntExtra("userId", -1);
+        if (userId == -1) {
+            Toast.makeText(this, "User not found. Please log in again.", Toast.LENGTH_SHORT).show();
+            finish(); // Kết thúc nếu không có userId hợp lệ
+        }
+
         // Load HomeFragment by default
         if (savedInstanceState == null) {
             loadFragment(createFragmentWithUserId(new HomeFragment()));
         }
 
-        // Set up BottomNavigationView to handle tab navigation
+        // Xử lý điều hướng với BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Fragment selectedFragment = null;
@@ -35,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = createFragmentWithUserId(new AccountFragment());
             }
 
-            // Replace the current fragment with the selected one
             if (selectedFragment != null) {
                 loadFragment(selectedFragment);
             }

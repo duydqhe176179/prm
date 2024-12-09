@@ -29,31 +29,29 @@ public class LoginActivity extends AppCompatActivity {
         Button btnRegister = findViewById(R.id.btnRegister);
 
         // Khi người dùng click vào nút đăng nhập
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String username = usernameEditText.getText().toString().trim();
-                String password = passwordEditText.getText().toString().trim();
+        loginButton.setOnClickListener(v -> {
+            String username = usernameEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
 
-                // Kiểm tra xem các trường có rỗng không
-                if (username.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(LoginActivity.this, "Please fill in both fields", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(LoginActivity.this, "Please fill in both fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
-                // Xác thực người dùng
-                if (authenticateUser(username, password)) {
-                    // Chuyển hướng tới MainActivity nếu đăng nhập thành công
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.putExtra("username", username);  // Truyền tên người dùng vào MainActivity
-                    startActivity(intent);  // Chuyển màn hình
-                    finish(); // Đóng LoginActivity để không quay lại được
-                } else {
-                    // Thông báo nếu đăng nhập không thành công
-                    Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
-                }
+            int userId = authenticateUser(username, password); // Lấy userId
+
+            if (userId != -1) {
+                // Đăng nhập thành công, chuyển sang MainActivity
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra("userId", userId); // Truyền userId vào MainActivity
+                startActivity(intent);
+                finish();
+            } else {
+                // Thông báo nếu đăng nhập không thành công
+                Toast.makeText(LoginActivity.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
             }
         });
+
 
         // Khi người dùng click vào nút đăng ký
         btnRegister.setOnClickListener(new View.OnClickListener() {
@@ -66,20 +64,20 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     // Hàm xác thực người dùng
-    private boolean authenticateUser(String username, String password) {
+    private int authenticateUser(String username, String password) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = null;
-        boolean isAuthenticated = false;
+        int userId = -1; // Giá trị mặc định nếu không tìm thấy người dùng
 
         try {
             // Truy vấn để tìm người dùng với tên đăng nhập và mật khẩu tương ứng
-            cursor = db.query("users", new String[]{"id", "username", "password"},
+            cursor = db.query("users", new String[]{"id"},
                     "username = ? AND password = ?", new String[]{username, password},
                     null, null, null);
 
             // Kiểm tra xem có kết quả không
             if (cursor != null && cursor.moveToFirst()) {
-                isAuthenticated = true;
+                userId = cursor.getInt(0); // Lấy cột "id" (userId)
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
-        return isAuthenticated;
+        return userId; // Trả về userId (hoặc -1 nếu không tìm thấy)
     }
+
 }
