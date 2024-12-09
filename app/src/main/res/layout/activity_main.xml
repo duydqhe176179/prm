@@ -1,44 +1,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/usernameTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
-
-    <TextView
-        android:id="@+id/totalAmountTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Total: $0"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:layout_marginBottom="16dp"/>
-
-    <Button
-        android:id="@+id/addTransactionButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Add Transaction"
-        android:layout_marginBottom="16dp"/>
-
-    <Button
-        android:id="@+id/viewReportButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="View Report" />
-
-    <ListView
-        android:id="@+id/transactionListView"
+    <!-- Fragment container to hold fragments -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="16dp"/>
+        android:layout_weight="1" />
+
+    <!-- Bottom navigation menu -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/bottom_nav_menu" />
+
 </LinearLayout>
