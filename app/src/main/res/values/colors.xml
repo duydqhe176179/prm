@@ -5,4 +5,8 @@
     <color name="background_color">#FFFFFF</color>
     <color name="text_color">#000000</color>
     <color name="purple_500">#DDA0DD</color>
+
+    <color name="money_in">#4380E6</color>
+    <color name="money_out">#CA2222</color>
+
 </resources>

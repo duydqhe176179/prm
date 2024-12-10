@@ -1,5 +1,7 @@
 package com.example.moneyshield;
 
+import static com.example.moneyshield.function.FormatMoney.formatMoney;
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -17,7 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class HomeFragment extends Fragment {
-
+    public static String balanceMoney;
     private DbContext dbHelper;
     private int userId;
     private ListView transactionListView;
@@ -121,6 +123,7 @@ public class HomeFragment extends Fragment {
         }
 
         double totalAmount = totalIncome - totalExpense;
-        totalAmountTextView.setText(String.format("Total: $%.2f", totalAmount));
+        totalAmountTextView.setText(formatMoney(totalAmount));
+        balanceMoney = formatMoney(totalAmount);
     }
 }

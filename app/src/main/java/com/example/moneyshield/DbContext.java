@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.moneyshield.model.Transaction;
 import com.github.mikephil.charting.data.Entry;
 
 import java.util.ArrayList;
@@ -142,8 +143,35 @@ public class DbContext extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
-
         return username;
+    }
+
+    public List<Transaction> getTransactionsByUserId(int userId) {
+        List<Transaction> transactions = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Truy vấn SQL
+        String query = "SELECT * FROM transactions WHERE user_id = ? ";
+        Cursor cursor = db.rawQuery(query, new String[]{
+                String.valueOf(userId)
+        });
+
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                int id = cursor.getInt(cursor.getColumnIndexOrThrow("id"));
+                int amount = cursor.getInt(cursor.getColumnIndexOrThrow("amount"));
+                String description = cursor.getString(cursor.getColumnIndexOrThrow("description"));
+                String date = cursor.getString(cursor.getColumnIndexOrThrow("date"));
+                String type = cursor.getString(cursor.getColumnIndexOrThrow("type"));
+
+                Transaction transaction = new Transaction(id, userId, amount, description, date, type);
+                transactions.add(transaction);
+            }
+            cursor.close();
+        }
+        db.close();
+
+        return transactions;
     }
 
 }

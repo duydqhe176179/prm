@@ -6,6 +6,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,7 +34,9 @@ public class MainActivity extends AppCompatActivity {
 
             if (item.getItemId() == R.id.home) {
                 selectedFragment = createFragmentWithUserId(new HomeFragment());
-            } else if (item.getItemId() == R.id.transaction || item.getItemId() == R.id.add) {
+            } else if (item.getItemId() == R.id.transaction) {
+                selectedFragment = createFragmentWithUserId(new TransactionBookFragment());
+            } else if (item.getItemId() == R.id.add) {
                 selectedFragment = createFragmentWithUserId(new AddTransactionFragment());
             } else if (item.getItemId() == R.id.balance) {
                 selectedFragment = createFragmentWithUserId(new ReportFragment());
