@@ -1,5 +1,7 @@
 package com.example.moneyshield;
 
+import static com.example.moneyshield.function.FormatMoney.formatMoney;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,7 +63,7 @@ public class ReportFragment extends Fragment {
         // Hiển thị số dư cuối cùng
         if (!entries.isEmpty()) {
             Entry lastEntry = entries.get(entries.size() - 1);
-            balanceTextView.setText(String.format("Số dư: %.2f đ", lastEntry.getY()));
+            balanceTextView.setText("Số dư: "+ formatMoney(lastEntry.getY())+" đ");
         }
 
         // Tính tổng thu và tổng chi
@@ -69,7 +71,9 @@ public class ReportFragment extends Fragment {
         double totalExpense = dbHelper.getTotalByType(userId, month, year, "Expense");
 
         // Hiển thị tổng thu và tổng chi
-        incomeDetailsTextView.setText(String.format("Tổng thu: %.2f đ", totalIncome));
+
+        incomeDetailsTextView.setText("Tổng thu: " + formatMoney(totalIncome)+" đ");
         spendingDetailsTextView.setText(String.format("Tổng đã chi: %.2f đ", totalExpense));
+        spendingDetailsTextView.setText("Tổng đã chi: "+ formatMoney(totalExpense)+" đ");
     }
 }
