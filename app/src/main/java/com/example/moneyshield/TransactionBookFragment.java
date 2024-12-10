@@ -33,7 +33,7 @@ public class TransactionBookFragment extends Fragment {
     private Spinner monthSpinner;
     private int userId;
 
-    // Binding views
+    // Binding views to variables
     private void bindingView(View view) {
         totalAmountTextView = view.findViewById(R.id.totalAmountTextView);
         totalIncome = view.findViewById(R.id.totalIncome);
@@ -54,9 +54,14 @@ public class TransactionBookFragment extends Fragment {
             userId = getArguments().getInt("userId", -1);
         }
 
-        // Get the current date
+        if (userId == -1) {
+            totalAmountTextView.setText("Invalid User");
+            return view;
+        }
+
+        // Get the current month and year
         Calendar calendar = Calendar.getInstance();
-        int currentMonth = calendar.get(Calendar.MONTH) + 1;  // Months are 0-indexed
+        int currentMonth = calendar.get(Calendar.MONTH) + 1;
         int currentYear = calendar.get(Calendar.YEAR);
 
         // Initialize the screen with the current month and year
@@ -64,7 +69,7 @@ public class TransactionBookFragment extends Fragment {
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Listener for spinner selection
+        // Spinner selection listener
         monthSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedView, int position, long id) {
@@ -76,25 +81,19 @@ public class TransactionBookFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
-                // Handle case when no item is selected
+                // Do nothing when no item is selected
             }
         });
-
 
         return view;
     }
 
     private void updateScreen(int month, int year) {
-        if (userId == -1) {
-            totalAmountTextView.setText("Invalid User");
-            return;
-        }
-
-        // Fetch transaction list from DB
+        // Fetch transactions from the database
         List<Transaction> transactions = dbHelper.getTransactionsByUserId(userId);
-
-        // Get unique months (yyyy-MM)
         Set<String> uniqueMonths = new HashSet<>();
+
+        // Collect unique months (yyyy-MM) from the transactions
         for (Transaction transaction : transactions) {
             String monthYear = transaction.getDate().substring(0, 7); // yyyy-MM
             uniqueMonths.add(monthYear);
@@ -103,53 +102,52 @@ public class TransactionBookFragment extends Fragment {
         List<String> monthsList = new ArrayList<>(uniqueMonths);
         Collections.sort(monthsList);
 
-        // Set up adapter for the month spinner
+        // Add the current month if no transactions exist or the current month is missing
+        String defaultMonth = year + "-" + (month < 10 ? "0" + month : month);
+        if (monthsList.isEmpty() || !monthsList.contains(defaultMonth)) {
+            monthsList.add(defaultMonth);
+            Collections.sort(monthsList);
+        }
+
+        // Set up the spinner adapter
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, monthsList);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         monthSpinner.setAdapter(adapter);
 
-        // Set the default selected item to the most recent month
-        String defaultMonth = year + "-" + (month < 10 ? "0" + month : month);
+        // Set the default selected month
         int defaultPosition = monthsList.indexOf(defaultMonth);
         if (defaultPosition != -1) {
             monthSpinner.setSelection(defaultPosition);
         }
 
-        // Filter transactions by selected month
         updateScreenFromMonth(defaultMonth);
     }
 
     private void updateScreenFromMonth(String selectedYearMonth) {
-        if (userId == -1) {
-            totalAmountTextView.setText("Invalid User");
-            return;
-        }
-
-        // Fetch transactions from DB
+        // Fetch all transactions from the database
         List<Transaction> transactions = dbHelper.getTransactionsByUserId(userId);
 
-        // Filter transactions by selected month (yyyy-MM)
+        // Filter transactions based on the selected month (yyyy-MM)
         List<Transaction> filteredTransactions = new ArrayList<>();
+        int totalIncomeMoney = 0;
+        int totalExpenseMoney = 0;
+
         for (Transaction transaction : transactions) {
             String transactionMonth = transaction.getDate().substring(0, 7); // yyyy-MM
             if (transactionMonth.equals(selectedYearMonth)) {
                 filteredTransactions.add(transaction);
+
+                // Calculate total income and expenses
+                if ("Income".equals(transaction.getType())) {
+                    totalIncomeMoney += transaction.getAmount();
+                } else if ("Expense".equals(transaction.getType())) {
+                    totalExpenseMoney += transaction.getAmount();
+                }
             }
         }
 
-        // Calculate total income and expenses
-        int totalIncomeMoney = 0;
-        int totalExpenseMoney = 0;
-        for (Transaction transaction : filteredTransactions) {
-            if ("Income".equals(transaction.getType())) {
-                totalIncomeMoney += transaction.getAmount();
-            } else if ("Expense".equals(transaction.getType())) {
-                totalExpenseMoney += transaction.getAmount();
-            }
-        }
-
-        // Set up the RecyclerView adapter with filtered transactions
-        filteredTransactions.sort((t1, t2) -> t1.getDate().compareTo(t2.getDate()));
+        // Update the RecyclerView with filtered transactions
+        Collections.sort(filteredTransactions, (t1, t2) -> t2.getDate().compareTo(t1.getDate()));
         transactionAdapter = new TransactionAdapter(getContext(), filteredTransactions);
         recyclerView.setAdapter(transactionAdapter);
 

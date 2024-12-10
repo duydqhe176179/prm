@@ -12,9 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MoneyShield"
         tools:targetApi="31">
-        <activity
-            android:name=".ReportActivity"
-            android:exported="false" />
         <!-- Đặt LoginActivity là màn hình khởi động -->
         <activity
             android:name=".LoginActivity"
@@ -26,7 +23,6 @@
             </intent-filter>
         </activity> <!-- Các activity khác -->
         <activity android:name=".MainActivity" />
-        <activity android:name=".AddTransactionActivity" />
         <activity android:name=".RegisterActivity" />
     </application>
 

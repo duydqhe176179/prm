@@ -12,8 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.example.moneyshield.DbContext;
-
 public class AccountFragment extends Fragment {
 
     private DbContext dbHelper;
@@ -30,11 +28,17 @@ public class AccountFragment extends Fragment {
 
         dbHelper = new DbContext(requireContext());
 
+        // Kiểm tra và lấy userId từ Bundle
         userId = getArguments() != null ? getArguments().getInt("userId", -1) : -1;
 
-        String username = dbHelper.getUsername(userId);
-        if (username != null) {
-            tvUserName.setText(username);
+        // Nếu userId hợp lệ, lấy tên người dùng
+        if (userId != -1) {
+            String username = dbHelper.getUsername(userId);
+            if (username != null) {
+                tvUserName.setText(username);
+            } else {
+                tvUserName.setText("Guest");
+            }
         } else {
             tvUserName.setText("Guest");
         }
@@ -51,5 +55,12 @@ public class AccountFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Đảm bảo đóng DbContext khi Fragment bị hủy
+        if (dbHelper != null) {
+            dbHelper.close();
+        }
+    }
 }
-

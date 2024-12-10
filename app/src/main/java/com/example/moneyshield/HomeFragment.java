@@ -19,58 +19,68 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class HomeFragment extends Fragment {
-    public static String balanceMoney;
-    private DbContext dbHelper;
-    private int userId;
-    private ListView transactionListView;
-    private TextView totalAmountTextView;
+    public static String balanceMoney; // Để lưu số dư
+    private DbContext dbHelper;       // Kết nối SQLite
+    private int userId;               // ID người dùng hiện tại
+    private ListView transactionListView; // Danh sách giao dịch
+    private TextView totalAmountTextView; // Tổng số dư
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Gán layout cho Fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        dbHelper = new DbContext(requireContext());
+        // Khởi tạo database helper
+        dbHelper = new DbContext(getContext()); // Dùng getContext() thay vì requireContext()
+        // Lấy userId từ Bundle
         userId = getArguments() != null ? getArguments().getInt("userId", -1) : -1;
 
+        // Gán các view trong layout
         TextView usernameTextView = view.findViewById(R.id.usernameTextView);
-        usernameTextView.setText("Welcome, " + getFullName());
-
         totalAmountTextView = view.findViewById(R.id.totalAmountTextView);
         transactionListView = view.findViewById(R.id.transactionListView);
 
+        // Hiển thị tên người dùng
+        usernameTextView.setText("Welcome, " + getFullName());
+
+        // Button thêm giao dịch
         Button addTransactionButton = view.findViewById(R.id.addTransactionButton);
-        addTransactionButton.setOnClickListener(v -> {
-            // Mở AddTransactionFragment
-            AddTransactionFragment addTransactionFragment = new AddTransactionFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("userId", userId);
-            addTransactionFragment.setArguments(bundle);
+        addTransactionButton.setOnClickListener(v -> openAddTransactionFragment());
 
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, addTransactionFragment)  // Thay thế với AddTransactionFragment
-                    .addToBackStack(null)  // Cho phép quay lại
-                    .commit();
-        });
-
+        // Button xem báo cáo
         Button viewReportButton = view.findViewById(R.id.viewReportButton);
-        viewReportButton.setOnClickListener(v -> {
-            // Mở ReportFragment
-            ReportFragment reportFragment = new ReportFragment();
-            Bundle bundle = new Bundle();
-            bundle.putInt("userId", userId);
-            reportFragment.setArguments(bundle);
+        viewReportButton.setOnClickListener(v -> openReportFragment());
 
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, reportFragment)  // Thay thế với ReportFragment
-                    .addToBackStack(null)  // Cho phép quay lại
-                    .commit();
-        });
-
+        // Tải giao dịch và hiển thị tổng số dư
         loadTransactions();
         calculateAndDisplayTotalAmount();
 
         return view;
+    }
+
+    private void openAddTransactionFragment() {
+        AddTransactionFragment addTransactionFragment = new AddTransactionFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt("userId", userId);
+        addTransactionFragment.setArguments(bundle);
+
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, addTransactionFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void openReportFragment() {
+        ReportFragment reportFragment = new ReportFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt("userId", userId);
+        reportFragment.setArguments(bundle);
+
+        requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, reportFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private String getFullName() {
@@ -80,46 +90,59 @@ public class HomeFragment extends Fragment {
         try {
             Log.d("HomeFragment", "Querying for userId: " + userId);
             cursor = db.rawQuery("SELECT username FROM users WHERE id = ?", new String[]{String.valueOf(userId)});
-            if (cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 fullName = cursor.getString(0);
             }
         } catch (Exception e) {
             Log.e("HomeFragment", "Error fetching user full name", e);
         } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+            if (cursor != null) cursor.close();
+            db.close();
         }
         return fullName;
     }
 
     private void loadTransactions() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT id AS _id, amount, description, date FROM transactions WHERE user_id = ?", new String[]{String.valueOf(userId)});
-        String[] fromColumns = {"amount", "description", "date"};
-        int[] toViews = {android.R.id.text1, android.R.id.text2, android.R.id.text1};
-        SimpleCursorAdapter adapter = new SimpleCursorAdapter(requireContext(), android.R.layout.simple_list_item_2, cursor, fromColumns, toViews, 0);
-        transactionListView.setAdapter(adapter);
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery("SELECT id AS _id, amount, description, date FROM transactions WHERE user_id = ?", new String[]{String.valueOf(userId)});
+
+            // Kiểm tra cursor không null và có dữ liệu
+            if (cursor != null && cursor.moveToFirst()) {
+                // Sử dụng SimpleCursorAdapter để gắn dữ liệu vào ListView
+                SimpleCursorAdapter adapter = new SimpleCursorAdapter(
+                        getActivity(), android.R.layout.simple_list_item_2, cursor,
+                        new String[]{"amount", "description", "date"},
+                        new int[]{android.R.id.text1, android.R.id.text2}, 0);
+                transactionListView.setAdapter(adapter);
+            }
+        } catch (Exception e) {
+            Log.e("DatabaseError", "Error loading transactions", e);
+        }
     }
+
+
 
     private void calculateAndDisplayTotalAmount() {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        double totalIncome = 0, totalExpense = 0;
         Cursor cursor = null;
+        double totalIncome = 0, totalExpense = 0;
 
         try {
+            // Tính tổng thu nhập
             cursor = db.rawQuery("SELECT SUM(amount) FROM transactions WHERE user_id = ? AND type = 'Income'", new String[]{String.valueOf(userId)});
-            if (cursor.moveToFirst()) totalIncome = cursor.getDouble(0);
-            cursor.close();
+            if (cursor != null && cursor.moveToFirst()) totalIncome = cursor.getDouble(0);
+            if (cursor != null) cursor.close();
 
+            // Tính tổng chi phí
             cursor = db.rawQuery("SELECT SUM(amount) FROM transactions WHERE user_id = ? AND type = 'Expense'", new String[]{String.valueOf(userId)});
-            if (cursor.moveToFirst()) totalExpense = cursor.getDouble(0);
+            if (cursor != null && cursor.moveToFirst()) totalExpense = cursor.getDouble(0);
         } catch (Exception e) {
             Log.e("HomeFragment", "Error calculating total amount", e);
         } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+            if (cursor != null) cursor.close();
+            db.close();
         }
 
         double totalAmount = totalIncome - totalExpense;

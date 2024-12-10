@@ -2,16 +2,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@android:color/white"
+    android:gravity="center_horizontal">
 
     <!-- TextView to display the user's name -->
     <TextView
         android:id="@+id/usernameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
+        android:text="Hello, User!"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+        android:textColor="#333333"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"/>
 
     <!-- TextView to display the total amount -->
     <TextView
@@ -19,26 +24,38 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Total: $0"
-        android:textSize="20sp"
+        android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="#009688"
         android:gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="24dp"/>
 
     <!-- Button to add a new transaction -->
     <Button
         android:id="@+id/addTransactionButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:text="Add Transaction"
-        android:layout_marginBottom="16dp" />
+        android:textColor="#ffffff"
+        android:backgroundTint="#009688"
+        android:layout_marginBottom="16dp"
+        android:layout_height="48dp" />
 
     <!-- Button to view the report -->
     <Button
         android:id="@+id/viewReportButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:text="View Report"
-        android:layout_marginBottom="16dp" />
+        android:textColor="#ffffff"
+        android:backgroundTint="#f44336"
+        android:layout_marginBottom="24dp"
+        android:layout_height="48dp" />
+
+    <!-- Divider between sections -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_marginBottom="16dp"/>
 
     <!-- ListView to display transactions -->
     <ListView
@@ -46,5 +63,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:divider="#e0e0e0"
+        android:dividerHeight="1dp"
         android:layout_marginTop="16dp" />
+
 </LinearLayout>
