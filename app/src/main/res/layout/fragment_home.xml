@@ -62,9 +62,9 @@
         android:id="@+id/transactionListView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         android:layout_weight="1"
         android:divider="#e0e0e0"
-        android:dividerHeight="1dp"
-        android:layout_marginTop="16dp" />
+        android:dividerHeight="1dp" />
 
 </LinearLayout>
